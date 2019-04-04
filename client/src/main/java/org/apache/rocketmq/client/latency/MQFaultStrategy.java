@@ -65,6 +65,7 @@ public class MQFaultStrategy {
                         pos = 0;
                     MessageQueue mq = tpInfo.getMessageQueueList().get(pos);
                     if (latencyFaultTolerance.isAvailable(mq.getBrokerName())) {
+                        // TODO 如果当前队列可用，且lastBrokerName为空，直接返回；如果lastBrokerName不为空，只有当前队列对应的Broker等于lastBrokerName才返回当前队列
                         if (null == lastBrokerName || mq.getBrokerName().equals(lastBrokerName))
                             return mq;
                     }
