@@ -436,6 +436,7 @@ public class CommitLog {
                     if (size > 0) {
                         mappedFileOffset += size;
 
+                        // TODO 如果允许消息重复，只有在commitLogOffset小于confirmOffset的情况下才执行doDispatch方法
                         if (this.defaultMessageStore.getMessageStoreConfig().isDuplicationEnable()) {
                             if (dispatchRequest.getCommitLogOffset() < this.defaultMessageStore.getConfirmOffset()) {
                                 this.defaultMessageStore.doDispatch(dispatchRequest);

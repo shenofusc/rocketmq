@@ -47,6 +47,7 @@ public abstract class ReferenceResource {
             this.release();
         } else if (this.getRefCount() > 0) {
             if ((System.currentTimeMillis() - this.firstShutdownTimestamp) >= intervalForcibly) {
+                // TODO (-1000 - this.getRefCount()) 相当于把 MappedFile 的引用数置为负数的同时再 -1000，应该是为了防止引用数比较小的时候被置为负数马上又被其他线程引用吧
                 this.refCount.set(-1000 - this.getRefCount());
                 this.release();
             }

@@ -240,6 +240,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
         final String groupTopic = MixAll.getRetryTopic(consumerGroup);
         for (MessageExt msg : msgs) {
             String retryTopic = msg.getProperty(MessageConst.PROPERTY_RETRY_TOPIC);
+            // 如果topic=%RETRY%Topic-A，就把当前消息的topic设置为创建消息时对应的重试主题
             if (retryTopic != null && groupTopic.equals(msg.getTopic())) {
                 msg.setTopic(retryTopic);
             }
@@ -296,7 +297,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
                 List<MessageExt> msgBackFailed = new ArrayList<MessageExt>(consumeRequest.getMsgs().size());
                 for (int i = ackIndex + 1; i < consumeRequest.getMsgs().size(); i++) {
                     MessageExt msg = consumeRequest.getMsgs().get(i);
-                    boolean result = this.sendMessageBack(msg, context);
+                    boolean result = this.sendMessageBack(msg, context);// TODO sendMessageBack
                     if (!result) {
                         msg.setReconsumeTimes(msg.getReconsumeTimes() + 1);
                         msgBackFailed.add(msg);

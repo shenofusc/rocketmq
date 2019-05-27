@@ -234,6 +234,7 @@ public class ScheduleMessageService extends ConfigManager {
         public void run() {
             try {
                 if (isStarted()) {
+                    // TODO 没搞明白这里的间隔时间怎么使用的
                     this.executeOnTimeup();
                 }
             } catch (Exception e) {

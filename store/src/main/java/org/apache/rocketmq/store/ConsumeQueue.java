@@ -99,6 +99,7 @@ public class ConsumeQueue {
             long mappedFileOffset = 0;
             long maxExtAddr = 1;
             while (true) {
+                // CQ_STORE_UNIT_SIZE={8 bytes offset + 4 bytes size + 8 bytes tag hashcode}
                 for (int i = 0; i < mappedFileSizeLogics; i += CQ_STORE_UNIT_SIZE) {
                     long offset = byteBuffer.getLong();
                     int size = byteBuffer.getInt();
@@ -117,7 +118,9 @@ public class ConsumeQueue {
                     }
                 }
 
+                // mappedFileOffset == mappedFileSizeLogics 表示完整的遍历完成了一个ConsumeQueue文件
                 if (mappedFileOffset == mappedFileSizeLogics) {
+                    // index++ 切换到下一个MappedFile
                     index++;
                     if (index >= mappedFiles.size()) {
 
@@ -138,6 +141,7 @@ public class ConsumeQueue {
                 }
             }
 
+            // processOffset 代表恢复完成后的最新偏移量
             processOffset += mappedFileOffset;
             this.mappedFileQueue.setFlushedWhere(processOffset);
             this.mappedFileQueue.setCommittedWhere(processOffset);
@@ -235,16 +239,20 @@ public class ConsumeQueue {
                 mappedFile.setCommittedPosition(0);
                 mappedFile.setFlushedPosition(0);
 
+                // 一条一条地遍历消息
                 for (int i = 0; i < logicFileSize; i += CQ_STORE_UNIT_SIZE) {
                     long offset = byteBuffer.getLong();
                     int size = byteBuffer.getInt();
                     long tagsCode = byteBuffer.getLong();
 
                     if (0 == i) {
+                        // 如果第一条消息的偏移量大于有效偏移量，直接删除当前ConsumeQueue文件
                         if (offset >= phyOffet) {
                             this.mappedFileQueue.deleteLastMappedFile();
                             break;
-                        } else {
+                        }
+                        // 否则的话就更新当前文件的最新指针
+                        else {
                             int pos = i + CQ_STORE_UNIT_SIZE;
                             mappedFile.setWrotePosition(pos);
                             mappedFile.setCommittedPosition(pos);
