@@ -179,6 +179,8 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                     this.defaultMQProducer.changeInstanceNameToPID();
                 }
 
+                // 启动消费者的时候也会调用到这里，但是这个时候获取到的MQClientInstance已经不为空了，所以会返回之前创建好的Instance
+                // 同一个JVM中的消费者和生产者共用同一个MQClientInstance
                 this.mQClientFactory = MQClientManager.getInstance().getAndCreateMQClientInstance(this.defaultMQProducer, rpcHook);
 
                 boolean registerOK = mQClientFactory.registerProducer(this.defaultMQProducer.getProducerGroup(), this);

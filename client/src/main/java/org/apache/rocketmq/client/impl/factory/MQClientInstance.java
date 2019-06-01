@@ -231,15 +231,15 @@ public class MQClientInstance {
                         this.mQClientAPIImpl.fetchNameServerAddr();
                     }
                     // Start request-response channel
-                    this.mQClientAPIImpl.start();
+                    this.mQClientAPIImpl.start();// 启动Netty客户端
                     // Start various schedule tasks
-                    this.startScheduledTask();
+                    this.startScheduledTask();// 启动一系列定时任务
                     // Start pull service
-                    this.pullMessageService.start();
+                    this.pullMessageService.start();// 启动消息拉取服务
                     // Start rebalance service
-                    this.rebalanceService.start();
+                    this.rebalanceService.start();// 启动消息队列负载均衡器
                     // Start push service
-                    this.defaultMQProducer.getDefaultMQProducerImpl().start(false);
+                    this.defaultMQProducer.getDefaultMQProducerImpl().start(false);// 启动默认生产者
                     log.info("the client factory [{}] start OK", this.clientId);
                     this.serviceState = ServiceState.RUNNING;
                     break;
