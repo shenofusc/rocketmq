@@ -298,7 +298,7 @@ public class MQClientInstance {
             }
         }, 1000, this.clientConfig.getHeartbeatBrokerInterval(), TimeUnit.MILLISECONDS);
 
-        // 每5s进行一次持久化
+        // 5s进行一次持久化
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
@@ -311,7 +311,7 @@ public class MQClientInstance {
             }
         }, 1000 * 10, this.clientConfig.getPersistConsumerOffsetInterval(), TimeUnit.MILLISECONDS);
 
-        // 每分钟调整一次线程池大小
+        // 1分钟调整一次线程池大小
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
