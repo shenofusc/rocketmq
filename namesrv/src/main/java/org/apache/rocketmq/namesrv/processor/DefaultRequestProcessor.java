@@ -92,6 +92,7 @@ public class DefaultRequestProcessor implements NettyRequestProcessor {
                 if (brokerVersion.ordinal() >= MQVersion.Version.V3_0_11.ordinal()) {
                     return this.registerBrokerWithFilterServer(ctx, request);
                 } else {
+                    // 这里会更新队列信息和Broker信息
                     return this.registerBroker(ctx, request);
                 }
             case RequestCode.UNREGISTER_BROKER:
