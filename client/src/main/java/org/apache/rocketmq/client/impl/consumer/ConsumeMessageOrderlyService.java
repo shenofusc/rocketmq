@@ -360,6 +360,7 @@ public class ConsumeMessageOrderlyService implements ConsumeMessageService {
 
     public boolean sendMessageBack(final MessageExt msg) {
         try {
+            // Broker端存储消息的时候如果发现重试次数超过最大重试次数（默认16）的话，会转发到死信队列，死信队列的消息不会再次被消费
             // max reconsume times exceeded then send to dead letter queue.
             Message newMsg = new Message(MixAll.getRetryTopic(this.defaultMQPushConsumer.getConsumerGroup()), msg.getBody());
             String originMsgId = MessageAccessor.getOriginMessageId(msg);

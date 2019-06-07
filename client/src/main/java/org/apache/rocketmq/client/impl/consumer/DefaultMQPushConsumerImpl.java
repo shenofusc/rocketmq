@@ -261,6 +261,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
         else {
             if (processQueue.isLocked()) {
                 if (!pullRequest.isLockedFirst()) {
+                    // 如果是第一次拉取，先计算待拉取偏移量
                     final long offset = this.rebalanceImpl.computePullFromWhere(pullRequest.getMessageQueue());// 查询消息消费进度
                     boolean brokerBusy = offset < pullRequest.getNextOffset();
                     log.info("the first time to pull message, so fix offset from broker. pullRequest: {} NewOffset: {} brokerBusy: {}",
