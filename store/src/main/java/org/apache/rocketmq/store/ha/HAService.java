@@ -432,17 +432,21 @@ public class HAService {
 
         private boolean dispatchReadRequest() {
             final int msgHeaderSize = 8 + 4; // phyoffset + size
+            // 记录byteBufferRead读取前的指针位置
             int readSocketPos = this.byteBufferRead.position();
 
             while (true) {
                 int diff = this.byteBufferRead.position() - this.dispatchPostion;
                 if (diff >= msgHeaderSize) {
+                    // 从上次转发的位置开始读取8个字节的数据
                     long masterPhyOffset = this.byteBufferRead.getLong(this.dispatchPostion);
                     int bodySize = this.byteBufferRead.getInt(this.dispatchPostion + 8);
 
+                    // 从节点上次拉取后保存的最大物理偏移量
                     long slavePhyOffset = HAService.this.defaultMessageStore.getMaxPhyOffset();
 
                     if (slavePhyOffset != 0) {
+                        // 如果从节点上次拉取后保存的最大物理偏移量和这次拉取的最小偏移量不相等，则报告错误，本次拉取失败
                         if (slavePhyOffset != masterPhyOffset) {
                             log.error("master pushed offset not equal the max phy offset in slave, SLAVE: "
                                 + slavePhyOffset + " MASTER: " + masterPhyOffset);
@@ -450,6 +454,7 @@ public class HAService {
                         }
                     }
 
+                    // 当且仅当本次拉取的有效字节数大于等于12个字节时（phyoffset + size）才追加数据到本地文件
                     if (diff >= (msgHeaderSize + bodySize)) {
                         byte[] bodyData = new byte[bodySize];
                         this.byteBufferRead.position(this.dispatchPostion + msgHeaderSize);
@@ -457,9 +462,12 @@ public class HAService {
 
                         HAService.this.defaultMessageStore.appendToCommitLog(masterPhyOffset, bodyData);
 
+                        // 重置byteBufferRead的起始指针
                         this.byteBufferRead.position(readSocketPos);
+                        // 更新转发指针
                         this.dispatchPostion += msgHeaderSize + bodySize;
 
+                        // 上报从节点当前最大物理偏移量到主节点
                         if (!reportSlaveMaxOffsetPlus()) {
                             return false;
                         }

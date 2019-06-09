@@ -99,13 +99,16 @@ public class HAConnection {
 
             while (!this.isStopped()) {
                 try {
+                    // 执行事件选择，超时时间为1s
                     this.selector.select(1000);
+                    // 处理读事件
                     boolean ok = this.processReadEvent();
                     if (!ok) {
                         HAConnection.log.error("processReadEvent error");
                         break;
                     }
 
+                    // 判断上次读取距离现在的时间间隔是否超出阈值，如果超出阈值直接终止当前任务
                     long interval = HAConnection.this.haService.getDefaultMessageStore().getSystemClock().now() - this.lastReadTimestamp;
                     if (interval > HAConnection.this.haService.getDefaultMessageStore().getMessageStoreConfig().getHaHousekeepingInterval()) {
                         log.warn("ha housekeeping, found this connection[" + HAConnection.this.clientAddr + "] expired, " + interval);
