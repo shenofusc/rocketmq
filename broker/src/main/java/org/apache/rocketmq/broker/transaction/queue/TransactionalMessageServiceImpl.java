@@ -219,6 +219,10 @@ public class TransactionalMessageServiceImpl implements TransactionalMessageServ
                             }
                         }
                         List<MessageExt> opMsg = pullResult.getMsgFoundList();
+                        // 如果op队列查询结果为空且消息落盘时间已经不在回查免疫时间之内
+                        // 或者op队列查询结果不为空且最后一条消息的落盘时间与本轮回查开始时间的差值大于超时时间
+                        // 或者当前消息的落盘时间异常
+                        // 如果满足任意以上三种情况中的任何一种，则立刻发起回查
                         boolean isNeedCheck = (opMsg == null && valueOfCurrentMinusBorn > checkImmunityTime)
                             || (opMsg != null && (opMsg.get(opMsg.size() - 1).getBornTimestamp() - startTime > transactionTimeout))
                             || (valueOfCurrentMinusBorn <= -1);
@@ -344,7 +348,8 @@ public class TransactionalMessageServiceImpl implements TransactionalMessageServ
         // 如果走到这边，说明不是第一次回查了
         else {
             long prepareQueueOffset = getLong(prepareQueueOffsetStr);
-            // 如果half消息的逻辑偏移量为-1，会直接发起回查，什么情况下prepareQueueOffset会被设置为-1呢？
+            // 如果half消息的逻辑偏移量为-1，会忽略回查免疫时间继续往下走
+            // 我理解是如果prepareQueueOffset等于-1应该属于异常情况，所以直接忽略回查免疫时间
             if (-1 == prepareQueueOffset) {
                 return false;
             } else {
