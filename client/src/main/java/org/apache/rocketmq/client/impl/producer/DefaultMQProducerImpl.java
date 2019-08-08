@@ -1155,6 +1155,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         Validators.checkMessage(msg, this.defaultMQProducer);
 
         SendResult sendResult = null;
+        // 设置PROPERTY_TRANSACTION_PREPARED属性为true，Processor检测到这个属性为true就会把消息存储到半消息队列中
         MessageAccessor.putProperty(msg, MessageConst.PROPERTY_TRANSACTION_PREPARED, "true");
         MessageAccessor.putProperty(msg, MessageConst.PROPERTY_PRODUCER_GROUP, this.defaultMQProducer.getProducerGroup());
         try {

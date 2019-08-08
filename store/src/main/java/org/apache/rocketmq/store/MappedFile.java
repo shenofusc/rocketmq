@@ -143,6 +143,7 @@ public class MappedFile extends ReferenceResource {
         return TOTAL_MAPPED_VIRTUAL_MEMORY.get();
     }
 
+    // 开启TransientStorePoolEnable的时候会调用这个方法
     public void init(final String fileName, final int fileSize,
         final TransientStorePool transientStorePool) throws IOException {
         init(fileName, fileSize);
@@ -150,6 +151,7 @@ public class MappedFile extends ReferenceResource {
         this.transientStorePool = transientStorePool;
     }
 
+    // 不开启TransientStorePoolEnable的时候只会调用这个初始化方法
     private void init(final String fileName, final int fileSize) throws IOException {
         this.fileName = fileName;
         this.fileSize = fileSize;
