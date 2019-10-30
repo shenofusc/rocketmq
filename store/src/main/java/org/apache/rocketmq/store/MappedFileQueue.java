@@ -161,7 +161,8 @@ public class MappedFileQueue {
                 try {
                     MappedFile mappedFile = new MappedFile(file.getPath(), mappedFileSize);
 
-                    // 将wrotePosition、flushedPosition、committedPosition三个指针都设置为文件大小，应该是一个初始化操作，后续会在recover方法中根据恢复后的具体偏移量再次更新这个值
+                    // 将wrotePosition、flushedPosition、committedPosition三个指针都设置为文件大小
+                    // 应该是一个初始化操作，后续会在recover方法中根据恢复后的具体偏移量再次更新这个值
                     mappedFile.setWrotePosition(this.mappedFileSize);
                     mappedFile.setFlushedPosition(this.mappedFileSize);
                     mappedFile.setCommittedPosition(this.mappedFileSize);
