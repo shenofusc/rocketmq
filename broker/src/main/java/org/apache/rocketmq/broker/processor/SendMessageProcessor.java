@@ -360,7 +360,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
             }
             putMessageResult = this.brokerController.getTransactionalMessageService().prepareMessage(msgInner);
         } else {
-            putMessageResult = this.brokerController.getMessageStore().putMessage(msgInner);
+            putMessageResult = this.brokerController.getMessageStore().putMessage(msgInner);//FIXME 消息存储核心代码
         }
 
         return handlePutMessageResult(putMessageResult, response, request, msgInner, responseHeader, sendMessageContext, ctx, queueIdInt);

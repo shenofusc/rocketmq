@@ -57,6 +57,7 @@ public class MQFaultStrategy {
 
     public MessageQueue selectOneMessageQueue(final TopicPublishInfo tpInfo, final String lastBrokerName) {
         if (this.sendLatencyFaultEnable) {
+            //开启开关则对不可用的broker进行规避
             try {
                 int index = tpInfo.getSendWhichQueue().getAndIncrement();
                 for (int i = 0; i < tpInfo.getMessageQueueList().size(); i++) {
@@ -65,8 +66,8 @@ public class MQFaultStrategy {
                         pos = 0;
                     MessageQueue mq = tpInfo.getMessageQueueList().get(pos);
                     if (latencyFaultTolerance.isAvailable(mq.getBrokerName())) {
-                        // 如果当前队列可用，且lastBrokerName为空，直接返回
-                        // 如果lastBrokerName不为空，只有当前队列对应的Broker等于lastBrokerName才返回当前队列
+                        // 如果当前队列可用，或者说已经过了退避时间，直接返回
+                        // 如果lastBrokerName不为空，并且lastBrokerName等于当前broker名称，说明broker恢复了
                         if (null == lastBrokerName || mq.getBrokerName().equals(lastBrokerName))
                             return mq;
                     }

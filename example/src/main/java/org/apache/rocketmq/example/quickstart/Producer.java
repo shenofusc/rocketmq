@@ -61,6 +61,7 @@ public class Producer {
                     "TagA" /* Tag */,
                     ("Hello RocketMQ " + i).getBytes(RemotingHelper.DEFAULT_CHARSET) /* Message body */
                 );
+                msg.setKeys("123 456 789");
 
                 /*
                  * Call send message to deliver message to one of brokers.

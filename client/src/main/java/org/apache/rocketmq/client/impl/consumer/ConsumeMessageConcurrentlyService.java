@@ -397,6 +397,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
 
             // MessageListener在创建Consumer的时候通过Consumer#registerMessageListener注册到DefaultMQPushConsumerImpl
             // 然后在DefaultMQPushConsumerImpl#start方法里面初始化消息消费模块的时候绑定到ConsumeMessageConcurrentlyService
+            // 说白了就是先把Listener注册到Consumer，然后Consumer启动时再绑定到ConcurrentlyService上，ConsumeRequest消费消息的时候回调Listener执行具体业务逻辑
             MessageListenerConcurrently listener = ConsumeMessageConcurrentlyService.this.messageListener;
             ConsumeConcurrentlyContext context = new ConsumeConcurrentlyContext(messageQueue);
             ConsumeConcurrentlyStatus status = null;

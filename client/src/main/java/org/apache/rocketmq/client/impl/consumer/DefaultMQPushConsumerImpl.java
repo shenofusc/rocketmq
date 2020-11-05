@@ -572,6 +572,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                 // 初始化RebalanceImpl的默认订阅信息
                 this.copySubscription();
 
+                //若instanceName为DEFAULT则修改为pid，这样可以避免一台机器启动多个consumer时出现cid重复
                 if (this.defaultMQPushConsumer.getMessageModel() == MessageModel.CLUSTERING) {
                     this.defaultMQPushConsumer.changeInstanceNameToPID();
                 }

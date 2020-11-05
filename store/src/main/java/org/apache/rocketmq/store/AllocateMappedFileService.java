@@ -134,6 +134,7 @@ public class AllocateMappedFileService extends ServiceThread {
     public void run() {
         log.info(this.getServiceName() + " service started");
 
+        //没有创建任务进来的时候，线程会再take方法上阻塞，不会占用cpu，有任务的时候创建+预热，最后返回创建好的MappedFile
         while (!this.isStopped() && this.mmapOperation()) {
 
         }
@@ -163,9 +164,11 @@ public class AllocateMappedFileService extends ServiceThread {
             if (req.getMappedFile() == null) {
                 long beginTime = System.currentTimeMillis();
 
+                //创建MappedFile的两种方法：ServiceLoader new
                 MappedFile mappedFile;
                 if (messageStore.getMessageStoreConfig().isTransientStorePoolEnable()) {
                     try {
+                        //FIXME 这种创建方式很奇怪，跟dubbo里面的spi实现是类似的，但是不知道为啥要这么写
                         mappedFile = ServiceLoader.load(MappedFile.class).iterator().next();
                         mappedFile.init(req.getFilePath(), req.getFileSize(), messageStore.getTransientStorePool());
                     } catch (RuntimeException e) {
@@ -184,6 +187,7 @@ public class AllocateMappedFileService extends ServiceThread {
                 }
 
                 // pre write mappedFile
+                //FIXME 预热的作用是什么呢？
                 if (mappedFile.getFileSize() >= this.messageStore.getMessageStoreConfig()
                     .getMapedFileSizeCommitLog()
                     &&

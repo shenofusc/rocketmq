@@ -120,6 +120,7 @@ public class TransactionalMessageServiceImpl implements TransactionalMessageServ
     @Override
     public void check(long transactionTimeout, int transactionCheckMax,
         AbstractTransactionalMessageCheckListener listener) {
+        //这里会推进op消息和half消息的消费进度
         try {
             String topic = MixAll.RMQ_SYS_TRANS_HALF_TOPIC;
             Set<MessageQueue> msgQueues = transactionalMessageBridge.fetchMessageQueues(topic);
@@ -187,6 +188,7 @@ public class TransactionalMessageServiceImpl implements TransactionalMessageServ
 
                         // 检查消息回查次数和保存时间
                         if (needDiscard(msgExt, transactionCheckMax) || needSkip(msgExt)) {
+                            //超出回查最大次数直接推进half队列消费进度，不管了。。
                             listener.resolveDiscardMsg(msgExt);
                             newOffset = i + 1;
                             i++;
@@ -228,9 +230,11 @@ public class TransactionalMessageServiceImpl implements TransactionalMessageServ
                             || (valueOfCurrentMinusBorn <= -1);
 
                         if (isNeedCheck) {
+                            //由于回查调用采用oneway方式，可能会失败，因此为了可靠性重发了half消息，宁愿多处理一次也要保证可靠性
                             if (!putBackHalfMsgQueue(msgExt, i)) {
                                 continue;
                             }
+                            //核心逻辑：发送回查消息
                             listener.resolveHalfMsg(msgExt);
                         } else {
                             pullResult = fillOpRemoveMap(removeMap, opQueue, pullResult.getNextBeginOffset(), halfOffset, doneOpOffset);
@@ -243,10 +247,12 @@ public class TransactionalMessageServiceImpl implements TransactionalMessageServ
                     i++;
                 }
                 if (newOffset != halfOffset) {
+                    //推进half消息消费进度
                     transactionalMessageBridge.updateConsumeOffset(messageQueue, newOffset);
                 }
                 long newOpOffset = calculateOpOffset(doneOpOffset, opOffset);
                 if (newOpOffset != opOffset) {
+                    //推进op消息消费进度
                     transactionalMessageBridge.updateConsumeOffset(opQueue, newOpOffset);
                 }
             }
@@ -488,6 +494,7 @@ public class TransactionalMessageServiceImpl implements TransactionalMessageServ
 
     @Override
     public boolean deletePrepareMessage(MessageExt msgExt) {
+        //这里会创建op消息
         if (this.transactionalMessageBridge.putOpMessage(msgExt, TransactionalMessageUtil.REMOVETAG)) {
             log.info("Transaction op message write successfully. messageId={}, queueId={} msgExt:{}", msgExt.getMsgId(), msgExt.getQueueId(), msgExt);
             return true;

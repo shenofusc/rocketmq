@@ -211,6 +211,9 @@ public class MappedFileQueue {
                 + UtilAll.offset2FileName(createOffset + this.mappedFileSize);
             MappedFile mappedFile = null;
 
+            //FIXME 好像只有从putRequestAndReturnMappedFile方法中返回的MappedFile才是做了内存映射的，直接创建的MappedFile似乎没有内存映射
+            // 猜测allocateMappedFileService初始化的时候肯定会赋值，不会为空，否则写入效率要打一点折扣的
+            // 不过不用内存映射也会用页缓存（page cache）机制，效率应该也还行
             if (this.allocateMappedFileService != null) {
                 mappedFile = this.allocateMappedFileService.putRequestAndReturnMappedFile(nextFilePath,
                     nextNextFilePath, this.mappedFileSize);

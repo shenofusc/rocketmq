@@ -256,7 +256,7 @@ public class MQClientInstance {
     }
 
     private void startScheduledTask() {
-        // 2分钟获取一次NameSrv地址
+        // 若consumer启动时未配置namesrv地址，则从DEFAULT_NAMESRV_ADDR_LOOKUP默认每隔2分钟获取一次NameSrv地址，相当于是一个动态配置中心
         if (null == this.clientConfig.getNamesrvAddr()) {
             this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
@@ -596,6 +596,7 @@ public class MQClientInstance {
             if (this.lockNamesrv.tryLock(LOCK_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)) {
                 try {
                     TopicRouteData topicRouteData;
+                    //尝试获取默认主题队列
                     if (isDefault && defaultMQProducer != null) {
                         topicRouteData = this.mQClientAPIImpl.getDefaultTopicRouteInfoFromNameServer(defaultMQProducer.getCreateTopicKey(),
                             1000 * 3);
@@ -607,6 +608,7 @@ public class MQClientInstance {
                             }
                         }
                     } else {
+                        //FIXME 看看这里的broker集合怎么获取到的，RouteInfoManager似乎没有存topic到broker的映射把？
                         topicRouteData = this.mQClientAPIImpl.getTopicRouteInfoFromNameServer(topic, 1000 * 3);
                     }
                     if (topicRouteData != null) {
